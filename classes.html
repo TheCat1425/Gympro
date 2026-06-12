@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse and book gym classes — HIIT, Yoga, Strength, Combat and more.">
+  <title>Classes — GymPro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo">
+        <span class="navbar__logo-icon">🏋️</span>
+        GymPro
+      </a>
+      <ul class="navbar__links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="classes.html" class="active">Classes</a></li>
+        <li><a href="bookings.html">My Bookings</a></li>
+        <li><a href="marketplace.html">Marketplace</a></li>
+        <li id="adminNavLink" style="display:none"><a href="admin.html">Admin</a></li>
+      </ul>
+      <div class="navbar__cta">
+        <div class="navbar__user-indicator" id="userIndicator" style="display:none"><span class="dot"></span><span>Loading...</span></div>
+        <div id="authButtons">
+          <a href="login.html" class="btn btn--ghost btn--sm">Login</a>
+          <a href="register.html" class="btn btn--primary btn--sm">Sign Up</a>
+        </div>
+      </div>
+      <button class="navbar__hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header container">
+    <h1 class="page-header__title">Find Your <span class="gradient-text">Perfect Class</span></h1>
+    <p class="page-header__subtitle">Filter by category, day, or level to discover classes that match your goals.</p>
+  </div>
+
+  <!-- Stats -->
+  <section class="container">
+    <div class="stats-bar" style="padding:0 0 40px">
+      <div class="stat-card">
+        <div class="stat-card__number" id="statClasses">0</div>
+        <div class="stat-card__label">Available Classes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__number" id="statSpots">0</div>
+        <div class="stat-card__label">Open Spots</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__number" id="statBookings">0</div>
+        <div class="stat-card__label">Your Bookings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__number" id="statCategories">0</div>
+        <div class="stat-card__label">Categories</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Classes Section -->
+  <section class="container" style="padding-bottom:100px">
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <input type="text" class="form-input" id="searchInput" placeholder="🔍  Search classes, instructors...">
+      <select class="form-select" id="categoryFilter">
+        <option value="">All Categories</option>
+        <option value="Cardio">🔥 Cardio</option>
+        <option value="Strength">💪 Strength</option>
+        <option value="Yoga">🧘 Yoga</option>
+        <option value="Flexibility">🤸 Flexibility</option>
+        <option value="Combat">🥊 Combat</option>
+      </select>
+      <select class="form-select" id="dayFilter">
+        <option value="">All Days</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+      </select>
+      <select class="form-select" id="levelFilter">
+        <option value="">All Levels</option>
+        <option value="Beginner">Beginner</option>
+        <option value="Intermediate">Intermediate</option>
+        <option value="Advanced">Advanced</option>
+        <option value="All Levels">All Levels</option>
+      </select>
+    </div>
+
+    <!-- Classes Grid -->
+    <div class="classes-grid" id="classesGrid">
+      <div class="page-loading" style="grid-column:1/-1"><div class="spinner spinner--lg"></div></div>
+    </div>
+  </section>
+
+  <!-- Booking Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal__header">
+        <h3 class="modal__title">Confirm Booking</h3>
+        <button class="modal__close" id="modalClose" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal__body">
+        <h4 id="modalClassName" style="font-size:1.15rem; font-weight:700; margin-bottom:20px; color:var(--primary-light);">—</h4>
+        <div class="modal__info-grid">
+          <div class="modal__info-item">
+            <div class="modal__info-label">Instructor</div>
+            <div class="modal__info-value" id="modalInstructor">—</div>
+          </div>
+          <div class="modal__info-item">
+            <div class="modal__info-label">Category</div>
+            <div class="modal__info-value" id="modalCategory">—</div>
+          </div>
+          <div class="modal__info-item">
+            <div class="modal__info-label">Day</div>
+            <div class="modal__info-value" id="modalDay">—</div>
+          </div>
+          <div class="modal__info-item">
+            <div class="modal__info-label">Time</div>
+            <div class="modal__info-value" id="modalTime">—</div>
+          </div>
+          <div class="modal__info-item">
+            <div class="modal__info-label">Duration</div>
+            <div class="modal__info-value" id="modalDuration">—</div>
+          </div>
+          <div class="modal__info-item">
+            <div class="modal__info-label">Available Spots</div>
+            <div class="modal__info-value" id="modalSpots">—</div>
+          </div>
+          <div class="modal__info-item" style="grid-column:1/-1">
+            <div class="modal__info-label">Level</div>
+            <div class="modal__info-value" id="modalLevel">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--secondary" id="modalCancel">Cancel</button>
+        <button class="btn btn--primary" id="modalConfirm">✓ Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Success Popup -->
+  <div class="booking-success-overlay" id="bookingSuccessOverlay">
+    <div class="booking-success">
+      <div class="booking-success__check">✓</div>
+      <h2 class="booking-success__title">Booking Confirmed!</h2>
+      <p class="booking-success__message">You're all set! Check your bookings page for details.</p>
+      <button class="btn btn--primary" onclick="closeModal('bookingSuccessOverlay')">Awesome! 🎉</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__brand">🏋️ GymPro</div>
+        <span class="footer__copy">© 2026 GymPro Fitness Platform. All rights reserved.</span>
+        <ul class="footer__links">
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/classes.js"></script>
+</body>
+</html>

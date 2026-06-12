@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GymPro Admin Panel — Manage bookings, users, and platform operations.">
+  <title>Admin Panel — GymPro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo"><span class="navbar__logo-icon">🏋️</span>GymPro</a>
+      <ul class="navbar__links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="classes.html">Classes</a></li>
+        <li><a href="marketplace.html">Marketplace</a></li>
+        <li id="adminNavLink"><a href="admin.html" class="active">Admin</a></li>
+      </ul>
+      <div class="navbar__cta">
+        <div class="navbar__user-indicator" id="userIndicator" style="display:none"><span class="dot"></span><span>Loading...</span></div>
+        <div id="authButtons"></div>
+      </div>
+      <button class="navbar__hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar__title">Admin Panel</div>
+      <ul class="admin-sidebar__nav">
+        <li><a href="#" class="admin-sidebar__link active" data-tab="tab-dashboard"><span class="icon">📊</span> Dashboard</a></li>
+        <li><a href="#" class="admin-sidebar__link" data-tab="tab-bookings"><span class="icon">📋</span> Bookings</a></li>
+        <li><a href="#" class="admin-sidebar__link" data-tab="tab-users"><span class="icon">👥</span> Users</a></li>
+        <li><a href="admin-products.html" class="admin-sidebar__link"><span class="icon">📦</span> Products</a></li>
+      </ul>
+      <div class="admin-sidebar__title" style="margin-top:32px">Quick Links</div>
+      <ul class="admin-sidebar__nav">
+        <li><a href="index.html" class="admin-sidebar__link"><span class="icon">🏠</span> View Site</a></li>
+        <li><a href="#" class="admin-sidebar__link" onclick="logout();return false;"><span class="icon">🚪</span> Logout</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+
+      <!-- Dashboard Tab -->
+      <div class="admin-tab-content active" id="tab-dashboard">
+        <div class="admin-main__header">
+          <div>
+            <h1 class="admin-main__title">Dashboard</h1>
+            <p class="admin-main__subtitle">Overview of your gym platform</p>
+          </div>
+        </div>
+
+        <div class="admin-stats">
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__icon">👥</div>
+            <div class="admin-stat-card__number" id="adminStatUsers">0</div>
+            <div class="admin-stat-card__label">Total Members</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__icon">📋</div>
+            <div class="admin-stat-card__number" id="adminStatBookings">0</div>
+            <div class="admin-stat-card__label">Active Bookings</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__icon">📦</div>
+            <div class="admin-stat-card__number" id="adminStatProducts">0</div>
+            <div class="admin-stat-card__label">Products</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__icon">💰</div>
+            <div class="admin-stat-card__number" id="adminStatRevenue">0</div>
+            <div class="admin-stat-card__label">Revenue ($)</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__icon">🛒</div>
+            <div class="admin-stat-card__number" id="adminStatOrders">0</div>
+            <div class="admin-stat-card__label">Total Orders</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__icon">🚫</div>
+            <div class="admin-stat-card__number" id="adminStatBlocked">0</div>
+            <div class="admin-stat-card__label">Blocked Users</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__icon">🏋️</div>
+            <div class="admin-stat-card__number" id="adminStatClasses">0</div>
+            <div class="admin-stat-card__label">Active Classes</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-card__icon">⚠️</div>
+            <div class="admin-stat-card__number" id="adminStatSoldOut">0</div>
+            <div class="admin-stat-card__label">Sold Out Items</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bookings Tab -->
+      <div class="admin-tab-content" id="tab-bookings">
+        <div class="admin-main__header">
+          <div>
+            <h1 class="admin-main__title">Bookings Management</h1>
+            <p class="admin-main__subtitle">View, add, and remove bookings for all users</p>
+          </div>
+          <button class="btn btn--primary btn--sm" onclick="showAddBookingModal()">+ Add Booking</button>
+        </div>
+
+        <div class="admin-toolbar">
+          <div class="admin-toolbar__search">
+            <input type="text" class="form-input" placeholder="🔍 Search bookings..." oninput="searchBookings(this.value)">
+          </div>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Class</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminBookingsBody">
+              <tr><td colspan="7"><div class="page-loading"><div class="spinner spinner--lg"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Users Tab -->
+      <div class="admin-tab-content" id="tab-users">
+        <div class="admin-main__header">
+          <div>
+            <h1 class="admin-main__title">User Management</h1>
+            <p class="admin-main__subtitle">View, block, and manage all users</p>
+          </div>
+        </div>
+
+        <div class="admin-toolbar">
+          <div class="admin-toolbar__search">
+            <input type="text" class="form-input" placeholder="🔍 Search users..." oninput="searchUsers(this.value)">
+          </div>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Member ID</th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Bookings</th>
+                <th>Orders</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersBody">
+              <tr><td colspan="7"><div class="page-loading"><div class="spinner spinner--lg"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Booking Modal -->
+  <div class="modal-overlay" id="addBookingModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h3 class="modal__title">Add Booking</h3>
+        <button class="modal__close" onclick="closeModal('addBookingModal')">✕</button>
+      </div>
+      <div class="modal__body">
+        <div class="form-group">
+          <label>Select User</label>
+          <select class="form-select" id="addBookingUser">
+            <option value="">Loading users...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Select Class</label>
+          <select class="form-select" id="addBookingClass">
+            <option value="">Loading classes...</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--secondary" onclick="closeModal('addBookingModal')">Cancel</button>
+        <button class="btn btn--primary" onclick="submitAddBooking()">Add Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

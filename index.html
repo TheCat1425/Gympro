@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GymPro — Your premium fitness platform. Book classes, shop supplements, and manage your fitness journey.">
+  <title>GymPro — Premium Fitness Platform</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+</head>
+<body>
+
+  <!-- Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo">
+        <span class="navbar__logo-icon">🏋️</span>
+        GymPro
+      </a>
+
+      <ul class="navbar__links" id="navLinks">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="classes.html">Classes</a></li>
+        <li><a href="bookings.html">My Bookings</a></li>
+        <li><a href="marketplace.html">Marketplace</a></li>
+        <li id="adminNavLink" style="display:none"><a href="admin.html">Admin</a></li>
+      </ul>
+
+      <div class="navbar__cta">
+        <div class="navbar__user-indicator" id="userIndicator" style="display:none">
+          <span class="dot"></span>
+          <span>Loading...</span>
+        </div>
+        <div id="authButtons">
+          <a href="login.html" class="btn btn--ghost btn--sm">Login</a>
+          <a href="register.html" class="btn btn--primary btn--sm">Sign Up</a>
+        </div>
+      </div>
+
+      <button class="navbar__hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="hero__grid"></div>
+    <div class="hero__content">
+      <div class="hero__badge">
+        <span class="pulse-dot"></span>
+        Live Class Schedule
+      </div>
+      <h1 class="hero__title">
+        Elevate Your<br><span class="gradient-text">Fitness Journey</span>
+      </h1>
+      <p class="hero__subtitle">
+        Browse real-time class schedules, book your favourite sessions, shop premium supplements,
+        and manage everything — all from one sleek platform.
+      </p>
+      <div class="hero__actions">
+        <a href="classes.html" class="btn btn--primary btn--lg">Browse Classes</a>
+        <a href="marketplace.html" class="btn btn--secondary btn--lg">🛒 Shop Now</a>
+        <a href="bookings.html" class="btn btn--ghost btn--lg">My Bookings →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Bar -->
+  <section class="container">
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-card__number">9+</div>
+        <div class="stat-card__label">Expert-Led Classes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__number">12+</div>
+        <div class="stat-card__label">Premium Products</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__number">5</div>
+        <div class="stat-card__label">Class Categories</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__number">24/7</div>
+        <div class="stat-card__label">Online Booking</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="section container">
+    <div class="section__header">
+      <span class="section__label">Platform</span>
+      <h2 class="section__title">Everything You Need</h2>
+      <p class="section__description">A complete fitness platform built for serious athletes and casual gym-goers alike.</p>
+    </div>
+
+    <div class="stats-bar" style="padding:0">
+      <div class="stat-card" style="cursor:pointer" onclick="location.href='classes.html'">
+        <div style="font-size:2.5rem;margin-bottom:12px">📋</div>
+        <div class="stat-card__label" style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px">Class Booking</div>
+        <div class="stat-card__label">Browse 9+ classes, filter by category, and book instantly with confirmation.</div>
+      </div>
+      <div class="stat-card" style="cursor:pointer" onclick="location.href='marketplace.html'">
+        <div style="font-size:2.5rem;margin-bottom:12px">🛒</div>
+        <div class="stat-card__label" style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px">Marketplace</div>
+        <div class="stat-card__label">Shop supplements, gear, apparel and more with a seamless cart experience.</div>
+      </div>
+      <div class="stat-card" style="cursor:pointer" onclick="location.href='bookings.html'">
+        <div style="font-size:2.5rem;margin-bottom:12px">📅</div>
+        <div class="stat-card__label" style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px">Booking Manager</div>
+        <div class="stat-card__label">View and manage all your bookings in one place. Cancel anytime.</div>
+      </div>
+      <div class="stat-card" style="cursor:pointer" onclick="location.href='register.html'">
+        <div style="font-size:2.5rem;margin-bottom:12px">🔐</div>
+        <div class="stat-card__label" style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px">Secure Auth</div>
+        <div class="stat-card__label">Create your account, get a unique Member ID, and access all features.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__brand">🏋️ GymPro</div>
+        <span class="footer__copy">© 2026 GymPro Fitness Platform. All rights reserved.</span>
+        <ul class="footer__links">
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
