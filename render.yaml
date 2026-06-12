@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: gymprojects
+    runtime: docker
+    plan: free
+    
+    # Build settings
+    dockerfilePath: ./Dockerfile
+    
+    # Environment variables (set in Render dashboard or here)
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: gymdb
+          property: host
+      - key: DB_NAME
+        value: gym_booking_system
+      - key: DB_USER
+        fromDatabase:
+          name: gymdb
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: gymdb
+          property: password
+      - key: DB_CHARSET
+        value: utf8mb4
+
+databases:
+  - name: gymdb
+    engine: mysql
+    version: '8.0'
+    plan: free
