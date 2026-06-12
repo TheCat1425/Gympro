@@ -111,7 +111,8 @@ function initRegisterForm(form) {
         showToast('error', data.message);
       }
     } catch (err) {
-      showToast('error', 'Network error. Please try again.');
+      console.error('Register error:', err);
+      showToast('error', 'Network error: ' + (err.message || 'Unknown error'));
     } finally {
       setButtonLoading(btn, false);
     }

@@ -1,6 +1,17 @@
 <?php
 // api/auth/register.php — Register a new user
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+
 require_once __DIR__ . '/../../db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

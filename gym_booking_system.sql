@@ -17,17 +17,31 @@ CREATE TABLE IF NOT EXISTS `users` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS `instructors` (
+  `instructor_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `full_name` VARCHAR(100) NOT NULL UNIQUE,
+  `specialty` VARCHAR(100) DEFAULT NULL,
+  `email` VARCHAR(150) DEFAULT NULL UNIQUE,
+  `phone` VARCHAR(20) DEFAULT NULL,
+  `bio` TEXT DEFAULT NULL,
+  `status` ENUM('active','blocked','removed') NOT NULL DEFAULT 'active',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `schedules` (
   `schedule_id` INT AUTO_INCREMENT PRIMARY KEY,
   `class_name` VARCHAR(100) NOT NULL,
   `category` VARCHAR(50) NOT NULL,
   `instructor` VARCHAR(100) NOT NULL,
+  `instructor_id` INT DEFAULT NULL,
   `day_of_week` VARCHAR(20) NOT NULL,
   `start_time` TIME NOT NULL,
   `duration_minutes` INT NOT NULL DEFAULT 60,
   `capacity` INT NOT NULL DEFAULT 20,
   `level` VARCHAR(30) NOT NULL DEFAULT 'All Levels',
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_schedules_instructor` FOREIGN KEY (`instructor_id`) REFERENCES `instructors`(`instructor_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `bookings` (
@@ -84,6 +98,19 @@ INSERT INTO `schedules` (`class_name`, `category`, `instructor`, `day_of_week`, 
 ('CrossFit WOD', 'Strength', 'Marcus Chen', 'Thursday', '17:00:00', 60, 18, 'Advanced'),
 ('Spin Cycle', 'Cardio', 'Sarah Johnson', 'Friday', '07:00:00', 40, 22, 'All Levels'),
 ('Muay Thai Basics', 'Combat', 'Jake Rivera', 'Friday', '19:00:00', 60, 16, 'Beginner');
+
+INSERT INTO `instructors` (`full_name`, `specialty`, `email`, `phone`, `bio`) VALUES
+('Sarah Johnson', 'Cardio', 'sarah@gympro.com', '+1111111111', 'High-energy coach focused on endurance and fat loss.'),
+('Maya Patel', 'Yoga', 'maya@gympro.com', '+2222222222', 'Mind-body instructor specializing in mobility and recovery.'),
+('Marcus Chen', 'Strength', 'marcus@gympro.com', '+3333333333', 'Strength coach with a focus on progressive overload.'),
+('Emma Wilson', 'Flexibility', 'emma@gympro.com', '+4444444444', 'Mobility specialist helping members move better.'),
+('Jake Rivera', 'Combat', 'jake@gympro.com', '+5555555555', 'Combat sports coach with technique-first sessions.');
+
+UPDATE `schedules` SET `instructor_id` = (SELECT `instructor_id` FROM `instructors` WHERE `full_name` = 'Sarah Johnson') WHERE `instructor` = 'Sarah Johnson';
+UPDATE `schedules` SET `instructor_id` = (SELECT `instructor_id` FROM `instructors` WHERE `full_name` = 'Maya Patel') WHERE `instructor` = 'Maya Patel';
+UPDATE `schedules` SET `instructor_id` = (SELECT `instructor_id` FROM `instructors` WHERE `full_name` = 'Marcus Chen') WHERE `instructor` = 'Marcus Chen';
+UPDATE `schedules` SET `instructor_id` = (SELECT `instructor_id` FROM `instructors` WHERE `full_name` = 'Emma Wilson') WHERE `instructor` = 'Emma Wilson';
+UPDATE `schedules` SET `instructor_id` = (SELECT `instructor_id` FROM `instructors` WHERE `full_name` = 'Jake Rivera') WHERE `instructor` = 'Jake Rivera';
 
 -- Seed products
 INSERT INTO `products` (`name`, `description`, `category`, `price`, `stock`, `image_url`) VALUES

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GymPro Admin — Manage instructors.">
+  <title>Instructor Management — GymPro Admin</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <nav class="navbar scrolled" id="navbar">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo"><span class="navbar__logo-icon">🏋️</span>GymPro</a>
+      <ul class="navbar__links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="classes.html">Classes</a></li>
+        <li><a href="marketplace.html">Marketplace</a></li>
+        <li id="adminNavLink"><a href="admin.html" class="active">Admin</a></li>
+      </ul>
+      <div class="navbar__cta">
+        <div class="navbar__user-indicator" id="userIndicator" style="display:none"><span class="dot"></span><span>Loading...</span></div>
+        <div id="authButtons"></div>
+      </div>
+      <button class="navbar__hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar__title">Admin Panel</div>
+      <ul class="admin-sidebar__nav">
+        <li><a href="admin.html" class="admin-sidebar__link"><span class="icon">📊</span> Dashboard</a></li>
+        <li><a href="admin-bookings.html" class="admin-sidebar__link"><span class="icon">📋</span> Bookings</a></li>
+        <li><a href="admin-users.html" class="admin-sidebar__link"><span class="icon">👥</span> Users</a></li>
+        <li><a href="admin-instructors.html" class="admin-sidebar__link active"><span class="icon">🏋️</span> Instructors</a></li>
+        <li><a href="admin-products.html" class="admin-sidebar__link"><span class="icon">📦</span> Products</a></li>
+      </ul>
+      <div class="admin-sidebar__title" style="margin-top:32px">Quick Links</div>
+      <ul class="admin-sidebar__nav">
+        <li><a href="index.html" class="admin-sidebar__link"><span class="icon">🏠</span> View Site</a></li>
+        <li><a href="#" class="admin-sidebar__link" onclick="logout();return false;"><span class="icon">🚪</span> Logout</a></li>
+      </ul>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-main__header">
+        <div>
+          <h1 class="admin-main__title">Instructor Management</h1>
+          <p class="admin-main__subtitle">Add, block, and remove instructors</p>
+        </div>
+        <button class="btn btn--primary btn--sm" onclick="showAddInstructorModal()">+ Add Instructor</button>
+      </div>
+
+      <div class="admin-toolbar">
+        <div class="admin-toolbar__search">
+          <input type="text" class="form-input" placeholder="🔍 Search instructors..." oninput="searchInstructors(this.value)">
+        </div>
+      </div>
+
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Instructor</th>
+              <th>Specialty</th>
+              <th>Classes</th>
+              <th>Bookings</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminInstructorsBody">
+            <tr><td colspan="7"><div class="page-loading"><div class="spinner spinner--lg"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="instructorModal">
+    <div class="modal" style="max-width:640px">
+      <div class="modal__header">
+        <h3 class="modal__title" id="instructorModalTitle">Add Instructor</h3>
+        <button class="modal__close" onclick="closeModal('instructorModal')">✕</button>
+      </div>
+      <div class="modal__body">
+        <form id="instructorForm" onsubmit="event.preventDefault();submitInstructorForm();">
+          <input type="hidden" id="instructorFormId" value="">
+          <div class="admin-form-grid">
+            <div class="form-group" style="grid-column:1/-1">
+              <label for="instructorFullName">Full Name</label>
+              <input type="text" class="form-input" id="instructorFullName" placeholder="e.g., Sarah Johnson" required>
+            </div>
+            <div class="form-group">
+              <label for="instructorSpecialty">Specialty</label>
+              <select class="form-input" id="instructorSpecialty" required>
+                <option value="">Select specialty...</option>
+                <option value="Cardio">Cardio</option>
+                <option value="Yoga">Yoga</option>
+                <option value="Strength">Strength</option>
+                <option value="Flexibility">Flexibility</option>
+                <option value="Combat">Combat</option>
+                <option value="Pilates">Pilates</option>
+                <option value="Zumba">Zumba</option>
+                <option value="CrossFit">CrossFit</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="instructorEmail">Email</label>
+              <input type="email" class="form-input" id="instructorEmail" placeholder="instructor@gympro.com">
+            </div>
+            <div class="form-group">
+              <label for="instructorPhone">Phone</label>
+              <input type="text" class="form-input" id="instructorPhone" placeholder="+1 555 123 4567">
+            </div>
+            <div class="form-group">
+              <label for="instructorDay">Day of Week</label>
+              <select class="form-input" id="instructorDay" required>
+                <option value="">Select day...</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="instructorTime">Start Time</label>
+              <select class="form-input" id="instructorTime" required>
+                <option value="">Select time...</option>
+                <option value="06:00:00">06:00 AM</option>
+                <option value="07:00:00">07:00 AM</option>
+                <option value="08:00:00">08:00 AM</option>
+                <option value="09:00:00">09:00 AM</option>
+                <option value="10:00:00">10:00 AM</option>
+                <option value="11:00:00">11:00 AM</option>
+                <option value="12:00:00">12:00 PM</option>
+                <option value="13:00:00">01:00 PM</option>
+                <option value="14:00:00">02:00 PM</option>
+                <option value="15:00:00">03:00 PM</option>
+                <option value="16:00:00">04:00 PM</option>
+                <option value="17:00:00">05:00 PM</option>
+                <option value="18:00:00">06:00 PM</option>
+                <option value="19:00:00">07:00 PM</option>
+                <option value="20:00:00">08:00 PM</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label for="instructorBio">Bio</label>
+              <textarea class="form-input form-textarea" id="instructorBio" placeholder="Short instructor profile..."></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--secondary" onclick="closeModal('instructorModal')">Cancel</button>
+        <button class="btn btn--primary" onclick="submitInstructorForm()">Save Instructor</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-confirm-overlay" id="adminConfirmOverlay">
+    <div class="admin-confirm">
+      <div class="admin-confirm__hero">
+        <div class="admin-confirm__icon" id="adminConfirmIcon">!</div>
+        <div class="admin-confirm__title" id="adminConfirmTitle">Confirm action</div>
+      </div>
+      <div class="admin-confirm__message" id="adminConfirmMessage">Are you sure?</div>
+      <div class="admin-confirm__footer">
+        <button class="btn btn--secondary" id="adminConfirmCancel">Cancel</button>
+        <button class="btn btn--primary btn--confirm btn--danger" id="adminConfirmAction">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

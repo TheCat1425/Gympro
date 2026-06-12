@@ -5,6 +5,7 @@
 let adminBookings = [];
 let adminUsers = [];
 let adminClasses = [];
+let adminInstructors = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
@@ -16,7 +17,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  initAdminTabs();
+  const pageName = window.location.pathname.split('/').pop();
+
+  if (pageName === 'admin-bookings.html') {
+    await loadBookings();
+    return;
+  }
+
+  if (pageName === 'admin-users.html') {
+    await loadUsers();
+    return;
+  }
+
+  if (pageName === 'admin-instructors.html') {
+    await loadInstructors();
+    return;
+  }
+
   await loadDashboard();
 });
 
@@ -55,6 +72,7 @@ async function loadDashboard() {
       animateCounter('adminStatRevenue', s.totalRevenue);
       animateCounter('adminStatOrders', s.totalOrders);
       animateCounter('adminStatBlocked', s.blockedUsers);
+      animateCounter('adminStatInstructors', s.activeInstructors);
       animateCounter('adminStatClasses', s.activeClasses);
       animateCounter('adminStatSoldOut', s.soldOutProducts);
     }
@@ -67,6 +85,10 @@ async function loadDashboard() {
 async function loadBookings() {
   const tbody = document.getElementById('adminBookingsBody');
   if (tbody) tbody.innerHTML = '<tr><td colspan="7"><div class="page-loading"><div class="spinner spinner--lg"></div></div></td></tr>';
+
+  if (adminUsers.length === 0) {
+    await loadUsers();
+  }
 
   try {
     const [bookingsRes, classesRes] = await Promise.all([
@@ -128,7 +150,15 @@ function renderAdminBookings(filter = '') {
 }
 
 async function adminRemoveBooking(bookingId) {
-  if (!confirm('Remove this booking?')) return;
+  const confirmed = await showConfirmModal({
+    title: 'Remove booking',
+    message: 'This will permanently remove the booking from the system.',
+    confirmText: 'Remove Booking',
+    variant: 'danger',
+    icon: '🗑️'
+  });
+
+  if (!confirmed) return;
 
   try {
     const formData = new FormData();
@@ -149,18 +179,22 @@ async function adminRemoveBooking(bookingId) {
 }
 
 // ---------- Add Booking Modal ----------
-function showAddBookingModal() {
+async function showAddBookingModal() {
   const userSelect = document.getElementById('addBookingUser');
   const classSelect = document.getElementById('addBookingClass');
 
+  if (adminUsers.length === 0) {
+    await loadUsers();
+  }
+
   // Populate users
-  if (userSelect && adminUsers.length > 0) {
+  if (userSelect) {
     userSelect.innerHTML = '<option value="">Select User</option>' +
       adminUsers.filter(u => u.status === 'active').map(u => `<option value="${u.id}">${u.fullName} (${u.email})</option>`).join('');
   }
 
   // Populate classes
-  if (classSelect && adminClasses.length > 0) {
+  if (classSelect) {
     classSelect.innerHTML = '<option value="">Select Class</option>' +
       adminClasses.map(c => `<option value="${c.id}">${c.name} — ${c.day} ${c.time}</option>`).join('');
   }
@@ -259,7 +293,17 @@ function renderAdminUsers(filter = '') {
 }
 
 async function toggleUserStatus(userId, action) {
-  if (!confirm(`${capitalize(action)} this user?`)) return;
+  const confirmed = await showConfirmModal({
+    title: action === 'block' ? 'Block user' : 'Unblock user',
+    message: action === 'block'
+      ? 'Blocked users will lose access until they are unblocked.'
+      : 'This will restore the user account access.',
+    confirmText: action === 'block' ? 'Block User' : 'Unblock User',
+    variant: action === 'block' ? 'danger' : 'success',
+    icon: action === 'block' ? '🚫' : '✅'
+  });
+
+  if (!confirmed) return;
 
   try {
     const formData = new FormData();
@@ -281,6 +325,212 @@ async function toggleUserStatus(userId, action) {
   }
 }
 
+// ---------- Instructor Management ----------
+async function loadInstructors() {
+  const tbody = document.getElementById('adminInstructorsBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="7"><div class="page-loading"><div class="spinner spinner--lg"></div></div></td></tr>';
+
+  try {
+    const res = await fetch(API_BASE + 'admin/get_all_instructors.php');
+    const data = await res.json();
+
+    if (data.success) {
+      adminInstructors = data.instructors;
+      renderAdminInstructors();
+    }
+  } catch (err) {
+    showToast('error', 'Failed to load instructors.');
+  }
+}
+
+function renderAdminInstructors(filter = '') {
+  const tbody = document.getElementById('adminInstructorsBody');
+  if (!tbody) return;
+
+  let filtered = adminInstructors;
+  if (filter) {
+    const q = filter.toLowerCase();
+    filtered = adminInstructors.filter(i =>
+      i.fullName.toLowerCase().includes(q) ||
+      (i.specialty || '').toLowerCase().includes(q) ||
+      (i.email || '').toLowerCase().includes(q)
+    );
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state" style="padding:40px"><div class="empty-state__icon">🏋️</div><h3 class="empty-state__title">No instructors found</h3></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(i => `
+    <tr>
+      <td>#INS-${String(i.id).padStart(4, '0')}</td>
+      <td>
+        <div class="user-info-cell">
+          <div class="user-avatar">${getInitials(i.fullName)}</div>
+          <div>
+            <div class="user-info-cell__name">${i.fullName}</div>
+            <div class="user-info-cell__email">${i.email || 'No email'}</div>
+          </div>
+        </div>
+      </td>
+      <td>${i.specialty || 'General Fitness'}</td>
+      <td>${i.totalClasses}</td>
+      <td>${i.totalBookings}</td>
+      <td><span class="status-badge status-badge--${i.status}">● ${capitalize(i.status)}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn--xs btn--secondary" onclick="editInstructor(${i.id})">Edit</button>
+          ${i.status === 'active'
+            ? `<button class="btn btn--xs btn--warning" onclick="toggleInstructorStatus(${i.id}, 'block')">Block</button>`
+            : i.status === 'blocked'
+              ? `<button class="btn btn--xs btn--success" onclick="toggleInstructorStatus(${i.id}, 'unblock')">Unblock</button>`
+              : ''
+          }
+          ${i.status !== 'removed' ? `<button class="btn btn--xs btn--danger" onclick="removeInstructor(${i.id})">Remove</button>` : ''}
+        </div>
+      </td>
+    </tr>`
+  ).join('');
+}
+
+function showAddInstructorModal() {
+  const form = document.getElementById('instructorForm');
+  if (form) form.reset();
+  const formId = document.getElementById('instructorFormId');
+  if (formId) formId.value = '';
+  const title = document.getElementById('instructorModalTitle');
+  if (title) title.textContent = 'Add Instructor';
+  openModal('instructorModal');
+}
+
+function editInstructor(instructorId) {
+  const instructor = adminInstructors.find(i => i.id === instructorId);
+  if (!instructor) return;
+
+  document.getElementById('instructorFormId').value = instructor.id;
+  document.getElementById('instructorFullName').value = instructor.fullName;
+  document.getElementById('instructorSpecialty').value = instructor.specialty || '';
+  document.getElementById('instructorEmail').value = instructor.email || '';
+  document.getElementById('instructorPhone').value = instructor.phone || '';
+  document.getElementById('instructorBio').value = instructor.bio || '';
+  document.getElementById('instructorDay').value = '';
+  document.getElementById('instructorTime').value = '';
+
+  const title = document.getElementById('instructorModalTitle');
+  if (title) title.textContent = 'Edit Instructor';
+  openModal('instructorModal');
+}
+
+async function submitInstructorForm() {
+  const instructorId = document.getElementById('instructorFormId')?.value;
+  const fullName = document.getElementById('instructorFullName')?.value.trim();
+  const specialty = document.getElementById('instructorSpecialty')?.value.trim();
+  const email = document.getElementById('instructorEmail')?.value.trim();
+  const phone = document.getElementById('instructorPhone')?.value.trim();
+  const bio = document.getElementById('instructorBio')?.value.trim();
+  const day = document.getElementById('instructorDay')?.value.trim();
+  const time = document.getElementById('instructorTime')?.value.trim();
+
+  if (!fullName || !specialty || !day || !time) {
+    return showToast('warning', 'Please fill in all required fields.');
+  }
+
+  const formData = new FormData();
+  formData.append('full_name', fullName);
+  formData.append('specialty', specialty);
+  formData.append('email', email);
+  formData.append('phone', phone);
+  formData.append('bio', bio);
+  formData.append('day_of_week', day);
+  formData.append('start_time', time);
+
+  const url = instructorId
+    ? API_BASE + 'admin/update_instructor.php'
+    : API_BASE + 'admin/add_instructor.php';
+
+  if (instructorId) formData.append('instructor_id', instructorId);
+
+  try {
+    const res = await fetch(url, { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+      closeModal('instructorModal');
+      showToast('success', data.message);
+      await loadInstructors();
+      await loadDashboard();
+    } else {
+      showToast('error', data.message);
+    }
+  } catch (err) {
+    showToast('error', 'Failed to save instructor.');
+  }
+}
+
+async function toggleInstructorStatus(instructorId, action) {
+  const confirmed = await showConfirmModal({
+    title: action === 'block' ? 'Block instructor' : 'Unblock instructor',
+    message: action === 'block'
+      ? 'Blocked instructors remain on file but are hidden from active scheduling.'
+      : 'This will restore the instructor to active status.',
+    confirmText: action === 'block' ? 'Block Instructor' : 'Unblock Instructor',
+    variant: action === 'block' ? 'danger' : 'success',
+    icon: action === 'block' ? '🚫' : '✅'
+  });
+
+  if (!confirmed) return;
+
+  try {
+    const formData = new FormData();
+    formData.append('instructor_id', instructorId);
+    formData.append('action', action);
+
+    const res = await fetch(API_BASE + 'admin/block_instructor.php', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('success', data.message);
+      await loadInstructors();
+      await loadDashboard();
+    } else {
+      showToast('error', data.message);
+    }
+  } catch (err) {
+    showToast('error', 'Failed to update instructor.');
+  }
+}
+
+async function removeInstructor(instructorId) {
+  const confirmed = await showConfirmModal({
+    title: 'Remove instructor',
+    message: 'This will archive the instructor and keep existing class records intact.',
+    confirmText: 'Remove Instructor',
+    variant: 'danger',
+    icon: '🗑️'
+  });
+
+  if (!confirmed) return;
+
+  try {
+    const formData = new FormData();
+    formData.append('instructor_id', instructorId);
+
+    const res = await fetch(API_BASE + 'admin/remove_instructor.php', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('success', data.message);
+      await loadInstructors();
+      await loadDashboard();
+    } else {
+      showToast('error', data.message);
+    }
+  } catch (err) {
+    showToast('error', 'Failed to remove instructor.');
+  }
+}
+
 // Search handlers
 function searchBookings(query) {
   renderAdminBookings(query);
@@ -288,4 +538,8 @@ function searchBookings(query) {
 
 function searchUsers(query) {
   renderAdminUsers(query);
+}
+
+function searchInstructors(query) {
+  renderAdminInstructors(query);
 }

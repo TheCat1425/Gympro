@@ -7,11 +7,30 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // 1. Database configuration
-$host     = 'localhost';
-$db       = 'gym_booking_system';
-$user     = 'root';
-$password = '';
-$charset  = 'utf8mb4';
+// Load a simple local .env file if present (KEY=VALUE lines)
+$envFile = __DIR__ . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || strpos($line, '#') === 0) continue;
+        if (strpos($line, '=') === false) continue;
+        list($k, $v) = explode('=', $line, 2);
+        $k = trim($k);
+        $v = trim($v);
+        if ($k !== '') {
+            if (getenv($k) === false) putenv("$k=$v");
+            if (!isset($_ENV[$k])) $_ENV[$k] = $v;
+        }
+    }
+}
+
+// Read configuration from environment with sensible defaults
+$host     = getenv('DB_HOST') ?: 'localhost';
+$db       = getenv('DB_NAME') ?: 'gym_booking_system';
+$user     = getenv('DB_USER') ?: 'root';
+$password = getenv('DB_PASS') ?: '';
+$charset  = getenv('DB_CHARSET') ?: 'utf8mb4';
 
 // 2. DSN
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -27,6 +46,45 @@ try {
     $pdo = new PDO($dsn, $user, $password, $options);
 } catch (\PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
+}
+
+ensureInstructorSchema($pdo);
+
+function ensureInstructorSchema(PDO $pdo) {
+    try {
+        $tableExists = $pdo->query("SHOW TABLES LIKE 'instructors'")->fetchColumn();
+        if (!$tableExists) {
+            $pdo->exec(
+                "CREATE TABLE IF NOT EXISTS `instructors` (
+                    `instructor_id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `full_name` VARCHAR(100) NOT NULL UNIQUE,
+                    `specialty` VARCHAR(100) DEFAULT NULL,
+                    `email` VARCHAR(150) DEFAULT NULL UNIQUE,
+                    `phone` VARCHAR(20) DEFAULT NULL,
+                    `bio` TEXT DEFAULT NULL,
+                    `status` ENUM('active','blocked','removed') NOT NULL DEFAULT 'active',
+                    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+            );
+        }
+    } catch (\PDOException $e) {
+        // Ignore schema create failures here; endpoints will return their own errors.
+    }
+
+    try {
+        $scheduleCols = $pdo->query("SHOW COLUMNS FROM `schedules`")->fetchAll(PDO::FETCH_COLUMN);
+        if ($scheduleCols && !in_array('instructor_id', $scheduleCols, true)) {
+            $pdo->exec("ALTER TABLE `schedules` ADD COLUMN `instructor_id` INT DEFAULT NULL AFTER `instructor`");
+        }
+
+        $create = $pdo->query("SHOW CREATE TABLE `schedules`")->fetch(PDO::FETCH_ASSOC);
+        if ($create && strpos($create['Create Table'], 'fk_schedules_instructor') === false) {
+            $pdo->exec("ALTER TABLE `schedules` ADD CONSTRAINT `fk_schedules_instructor` FOREIGN KEY (`instructor_id`) REFERENCES `instructors`(`instructor_id`) ON DELETE SET NULL");
+        }
+    } catch (\PDOException $e) {
+        // Ignore if schedules table does not exist or constraint cannot be added.
+    }
 }
 
 // =============================================

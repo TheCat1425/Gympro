@@ -9,7 +9,8 @@ try {
             s.schedule_id as id,
             s.class_name as name,
             s.category,
-            s.instructor,
+            COALESCE(i.full_name, s.instructor) as instructor,
+            i.status as instructorStatus,
             s.day_of_week as day,
             DATE_FORMAT(s.start_time, '%h:%i %p') as time,
             s.duration_minutes as duration,
@@ -17,6 +18,7 @@ try {
             s.level,
             (SELECT COUNT(*) FROM bookings b WHERE b.schedule_id = s.schedule_id AND b.status = 'confirmed') as enrolled
         FROM schedules s
+        LEFT JOIN instructors i ON i.instructor_id = s.instructor_id
         ORDER BY FIELD(s.day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'), s.start_time
     ";
     

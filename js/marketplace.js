@@ -26,14 +26,21 @@ async function fetchProducts() {
     if (activeCategory) url += '?category=' + encodeURIComponent(activeCategory);
 
     const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
     const data = await res.json();
 
     if (data.success) {
       allProducts = data.products;
       renderProducts(allProducts);
+    } else {
+      showToast('error', data.message || 'Failed to load products.');
+      console.error('API error:', data);
     }
   } catch (err) {
-    showToast('error', 'Failed to load products.');
+    console.error('Fetch error:', err);
+    showToast('error', 'Failed to load products: ' + err.message);
   }
 }
 

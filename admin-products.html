@@ -37,8 +37,9 @@
       <div class="admin-sidebar__title">Admin Panel</div>
       <ul class="admin-sidebar__nav">
         <li><a href="admin.html" class="admin-sidebar__link"><span class="icon">📊</span> Dashboard</a></li>
-        <li><a href="admin.html" class="admin-sidebar__link"><span class="icon">📋</span> Bookings</a></li>
-        <li><a href="admin.html" class="admin-sidebar__link"><span class="icon">👥</span> Users</a></li>
+        <li><a href="admin-bookings.html" class="admin-sidebar__link"><span class="icon">📋</span> Bookings</a></li>
+        <li><a href="admin-users.html" class="admin-sidebar__link"><span class="icon">👥</span> Users</a></li>
+        <li><a href="admin-instructors.html" class="admin-sidebar__link"><span class="icon">🏋️</span> Instructors</a></li>
         <li><a href="admin-products.html" class="admin-sidebar__link active"><span class="icon">📦</span> Products</a></li>
       </ul>
       <div class="admin-sidebar__title" style="margin-top:32px">Quick Links</div>
@@ -135,6 +136,20 @@
       <div class="modal__footer">
         <button class="btn btn--secondary" onclick="closeModal('productModal')">Cancel</button>
         <button class="btn btn--primary" onclick="submitProductForm()">Save Product</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-confirm-overlay" id="adminConfirmOverlay">
+    <div class="admin-confirm">
+      <div class="admin-confirm__hero">
+        <div class="admin-confirm__icon" id="adminConfirmIcon">!</div>
+        <div class="admin-confirm__title" id="adminConfirmTitle">Confirm action</div>
+      </div>
+      <div class="admin-confirm__message" id="adminConfirmMessage">Are you sure?</div>
+      <div class="admin-confirm__footer">
+        <button class="btn btn--secondary" id="adminConfirmCancel">Cancel</button>
+        <button class="btn btn--primary btn--confirm btn--danger" id="adminConfirmAction">Confirm</button>
       </div>
     </div>
   </div>

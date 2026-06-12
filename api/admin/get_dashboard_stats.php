@@ -13,6 +13,7 @@ try {
     $stats['totalRevenue']  = (float) ($pdo->query("SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status != 'cancelled'")->fetchColumn());
     $stats['blockedUsers']  = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE status = 'blocked'")->fetchColumn();
     $stats['activeClasses'] = (int) $pdo->query("SELECT COUNT(*) FROM schedules")->fetchColumn();
+    $stats['activeInstructors'] = (int) $pdo->query("SELECT COUNT(*) FROM instructors WHERE status = 'active'")->fetchColumn();
     $stats['soldOutProducts'] = (int) $pdo->query("SELECT COUNT(*) FROM products WHERE status = 'sold_out'")->fetchColumn();
 
     jsonResponse(['success' => true, 'stats' => $stats]);

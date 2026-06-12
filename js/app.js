@@ -7,6 +7,7 @@ const API_BASE = 'api/';
 
 // ---------- Current User State ----------
 let currentUser = null;
+let confirmModalResolver = null;
 
 // ---------- DOM Ready ----------
 document.addEventListener('DOMContentLoaded', async () => {
@@ -241,6 +242,50 @@ function closeModal(overlayId) {
   if (overlay) {
     overlay.classList.remove('active');
     document.body.style.overflow = '';
+  }
+}
+
+function showConfirmModal({ title = 'Confirm action', message = '', confirmText = 'Confirm', cancelText = 'Cancel', variant = 'danger', icon = '!' } = {}) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('adminConfirmOverlay');
+    const titleEl = document.getElementById('adminConfirmTitle');
+    const messageEl = document.getElementById('adminConfirmMessage');
+    const iconEl = document.getElementById('adminConfirmIcon');
+    const confirmBtn = document.getElementById('adminConfirmAction');
+    const cancelBtn = document.getElementById('adminConfirmCancel');
+
+    if (!overlay || !titleEl || !messageEl || !iconEl || !confirmBtn || !cancelBtn) {
+      resolve(window.confirm(message || title));
+      return;
+    }
+
+    confirmModalResolver = resolve;
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    iconEl.textContent = icon;
+    confirmBtn.textContent = confirmText;
+    confirmBtn.className = `btn btn--primary btn--confirm btn--${variant}`;
+    cancelBtn.textContent = cancelText;
+
+    confirmBtn.onclick = () => closeConfirmModal(true);
+    cancelBtn.onclick = () => closeConfirmModal(false);
+    overlay.onclick = (event) => {
+      if (event.target === overlay) closeConfirmModal(false);
+    };
+
+    openModal('adminConfirmOverlay');
+  });
+}
+
+function closeConfirmModal(result) {
+  const overlay = document.getElementById('adminConfirmOverlay');
+  if (overlay) overlay.classList.remove('active');
+  document.body.style.overflow = '';
+
+  if (confirmModalResolver) {
+    const resolver = confirmModalResolver;
+    confirmModalResolver = null;
+    resolver(result);
   }
 }
 

@@ -162,7 +162,15 @@ async function toggleProductStatus(productId, newStatus) {
 }
 
 async function deleteProduct(productId, productName) {
-  if (!confirm(`Delete "${productName}"? This will mark it as discontinued.`)) return;
+  const confirmed = await showConfirmModal({
+    title: 'Remove product',
+    message: `Delete "${productName}"? This will mark it as discontinued.`,
+    confirmText: 'Delete Product',
+    variant: 'danger',
+    icon: '🗑️'
+  });
+
+  if (!confirmed) return;
 
   try {
     const formData = new FormData();

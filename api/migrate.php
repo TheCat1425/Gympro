@@ -149,7 +149,47 @@ try {
     $output[] = "⚠️ Orders: " . $e->getMessage();
 }
 
-// 7. Order items table (NEW)
+    // 4. Instructors table
+    try {
+        $pdo->exec("
+            CREATE TABLE IF NOT EXISTS `instructors` (
+                `instructor_id` INT AUTO_INCREMENT PRIMARY KEY,
+                `full_name`     VARCHAR(100) NOT NULL UNIQUE,
+                `specialty`     VARCHAR(100) DEFAULT NULL,
+                `email`         VARCHAR(150) DEFAULT NULL UNIQUE,
+                `phone`         VARCHAR(20) DEFAULT NULL,
+                `bio`           TEXT DEFAULT NULL,
+                `status`        ENUM('active','blocked','removed') NOT NULL DEFAULT 'active',
+                `created_at`    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `updated_at`    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+        $output[] = "✅ Table <code>instructors</code> created/verified.";
+    } catch (PDOException $e) {
+        $output[] = "⚠️ Instructors: " . $e->getMessage();
+    }
+
+    try {
+        $scheduleCols = $pdo->query("SHOW COLUMNS FROM `schedules`")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('instructor_id', $scheduleCols, true)) {
+            $pdo->exec("ALTER TABLE `schedules` ADD COLUMN `instructor_id` INT DEFAULT NULL AFTER `instructor`");
+            $output[] = "✅ Added `instructor_id` to schedules.";
+        }
+
+        $fkCheck = $pdo->query("SHOW CREATE TABLE `schedules`")->fetch(PDO::FETCH_ASSOC);
+        if ($fkCheck && strpos($fkCheck['Create Table'], 'fk_schedules_instructor') === false) {
+            try {
+                $pdo->exec("ALTER TABLE `schedules` ADD CONSTRAINT `fk_schedules_instructor` FOREIGN KEY (`instructor_id`) REFERENCES `instructors`(`instructor_id`) ON DELETE SET NULL");
+                $output[] = "✅ Added schedule instructor foreign key.";
+            } catch (PDOException $e) {
+                $output[] = "⚠️ schedule FK: " . $e->getMessage();
+            }
+        }
+    } catch (PDOException $e) {
+        $output[] = "⚠️ Schedule instructor link: " . $e->getMessage();
+    }
+
+    // 5. Bookings table (keep existing)
 try {
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS `order_items` (
@@ -168,7 +208,7 @@ try {
 }
 
 // =============================================
-// SEED DATA
+    // 6. Products table (NEW)
 // =============================================
 $output[] = "<h2>📦 Seeding Data...</h2>";
 
@@ -189,7 +229,7 @@ try {
     $stmt->execute(['John Doe', 'john@gympro.com', $memberHash, '+9876543210']);
     $output[] = "✅ Demo member seeded: <code>john@gympro.com</code> / <code>member123</code>";
 } catch (PDOException $e) {
-    $output[] = "⚠️ Demo member: " . $e->getMessage();
+    // 7. Orders table (NEW)
 }
 
 // Seed schedules (if empty)
@@ -206,7 +246,7 @@ try {
             ['CrossFit WOD',      'Strength',    'Marcus Chen',     'Thursday',  '17:00:00', 60, 18, 'Advanced'],
             ['Spin Cycle',        'Cardio',      'Sarah Johnson',   'Friday',    '07:00:00', 40, 22, 'All Levels'],
             ['Muay Thai Basics',  'Combat',      'Jake Rivera',     'Friday',    '19:00:00', 60, 16, 'Beginner'],
-        ];
+    // 8. Order items table (NEW)
         $stmt = $pdo->prepare("INSERT INTO `schedules` (`class_name`, `category`, `instructor`, `day_of_week`, `start_time`, `duration_minutes`, `capacity`, `level`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         foreach ($schedules as $s) {
             $stmt->execute($s);
@@ -217,6 +257,16 @@ try {
     }
 } catch (PDOException $e) {
     $output[] = "⚠️ Schedules seeding: " . $e->getMessage();
+}
+
+try {
+    $link = $pdo->prepare("UPDATE schedules SET instructor_id = (SELECT instructor_id FROM instructors WHERE full_name = ?) WHERE instructor = ?");
+    foreach (['Sarah Johnson', 'Maya Patel', 'Marcus Chen', 'Emma Wilson', 'Jake Rivera'] as $name) {
+        $link->execute([$name, $name]);
+    }
+    $output[] = "✅ Schedules linked to instructors.";
+} catch (PDOException $e) {
+    $output[] = "⚠️ Schedule link backfill: " . $e->getMessage();
 }
 
 // Seed products (if empty)
@@ -233,6 +283,31 @@ try {
             ['Resistance Bands Set',     '5-band set with varying resistance levels.',                  'gear',        19.99, 45, '🏋️'],
             ['Lifting Gloves Pro',       'Padded leather gloves with wrist wraps.',                     'gear',        32.99, 25, '🧤'],
             ['GymPro Tank Top',          'Moisture-wicking performance tank. Multiple sizes.',          'apparel',     27.99, 60, '👕'],
+
+    // Seed instructor profiles and link existing schedules
+    try {
+        $instructors = [
+            ['Sarah Johnson', 'Cardio', 'sarah@gympro.com', '+1111111111', 'High-energy coach focused on endurance and fat loss.'],
+            ['Maya Patel', 'Yoga', 'maya@gympro.com', '+2222222222', 'Mind-body instructor specializing in mobility and recovery.'],
+            ['Marcus Chen', 'Strength', 'marcus@gympro.com', '+3333333333', 'Strength coach with a focus on progressive overload.'],
+            ['Emma Wilson', 'Flexibility', 'emma@gympro.com', '+4444444444', 'Mobility specialist helping members move better.'],
+            ['Jake Rivera', 'Combat', 'jake@gympro.com', '+5555555555', 'Combat sports coach with technique-first sessions.'],
+        ];
+
+        $insertInstructor = $pdo->prepare("INSERT IGNORE INTO instructors (full_name, specialty, email, phone, bio, status) VALUES (?, ?, ?, ?, ?, 'active')");
+        foreach ($instructors as $instructor) {
+            $insertInstructor->execute($instructor);
+        }
+
+        $link = $pdo->prepare("UPDATE schedules SET instructor_id = (SELECT instructor_id FROM instructors WHERE full_name = ?) WHERE instructor = ?");
+        foreach ($instructors as $instructor) {
+            $link->execute([$instructor[0], $instructor[0]]);
+        }
+
+        $output[] = "✅ Instructor profiles seeded and schedules linked.";
+    } catch (PDOException $e) {
+        $output[] = "⚠️ instructor seed/link: " . $e->getMessage();
+    }
             ['Compression Leggings',     'High-waist athletic leggings with pocket.',                   'apparel',     39.99, 40, '🩳'],
             ['Shaker Bottle Pro',        '800ml leak-proof shaker with mixing ball.',                   'accessories', 14.99, 90, '🧴'],
             ['Gym Bag Duffle',           'Large capacity waterproof gym duffle bag.',                   'accessories', 44.99, 30, '🎒'],

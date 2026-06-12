@@ -12,13 +12,14 @@ try {
             b.booking_id as id,
             b.schedule_id as scheduleId,
             s.class_name as className,
-            s.instructor,
+            COALESCE(i.full_name, s.instructor) as instructor,
             s.day_of_week as day,
             DATE_FORMAT(s.start_time, '%h:%i %p') as time,
             b.booking_date as bookedAt,
             b.status
         FROM bookings b
         JOIN schedules s ON b.schedule_id = s.schedule_id
+        LEFT JOIN instructors i ON i.instructor_id = s.instructor_id
         WHERE b.user_id = :user_id AND b.status = 'confirmed'
         ORDER BY b.booking_date DESC
     ";

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="GymPro Admin Panel — Manage bookings, users, and platform operations.">
+  <meta name="description" content="GymPro Admin Panel — Manage bookings, users, instructors, and operations.">
   <title>Admin Panel — GymPro</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/admin.css">
@@ -13,7 +13,6 @@
 
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Navigation -->
   <nav class="navbar scrolled" id="navbar">
     <div class="navbar__inner">
       <a href="index.html" class="navbar__logo"><span class="navbar__logo-icon">🏋️</span>GymPro</a>
@@ -32,13 +31,13 @@
   </nav>
 
   <div class="admin-layout">
-    <!-- Sidebar -->
     <aside class="admin-sidebar">
       <div class="admin-sidebar__title">Admin Panel</div>
       <ul class="admin-sidebar__nav">
-        <li><a href="#" class="admin-sidebar__link active" data-tab="tab-dashboard"><span class="icon">📊</span> Dashboard</a></li>
-        <li><a href="#" class="admin-sidebar__link" data-tab="tab-bookings"><span class="icon">📋</span> Bookings</a></li>
-        <li><a href="#" class="admin-sidebar__link" data-tab="tab-users"><span class="icon">👥</span> Users</a></li>
+        <li><a href="admin.html" class="admin-sidebar__link active"><span class="icon">📊</span> Dashboard</a></li>
+        <li><a href="admin-bookings.html" class="admin-sidebar__link"><span class="icon">📋</span> Bookings</a></li>
+        <li><a href="admin-users.html" class="admin-sidebar__link"><span class="icon">👥</span> Users</a></li>
+        <li><a href="admin-instructors.html" class="admin-sidebar__link"><span class="icon">🏋️</span> Instructors</a></li>
         <li><a href="admin-products.html" class="admin-sidebar__link"><span class="icon">📦</span> Products</a></li>
       </ul>
       <div class="admin-sidebar__title" style="margin-top:32px">Quick Links</div>
@@ -48,159 +47,80 @@
       </ul>
     </aside>
 
-    <!-- Main Content -->
     <main class="admin-main">
-
-      <!-- Dashboard Tab -->
-      <div class="admin-tab-content active" id="tab-dashboard">
-        <div class="admin-main__header">
-          <div>
-            <h1 class="admin-main__title">Dashboard</h1>
-            <p class="admin-main__subtitle">Overview of your gym platform</p>
-          </div>
+      <div class="admin-main__header">
+        <div>
+          <h1 class="admin-main__title">Dashboard</h1>
+          <p class="admin-main__subtitle">Overview of your gym platform.</p>
         </div>
-
-        <div class="admin-stats">
-          <div class="admin-stat-card">
-            <div class="admin-stat-card__icon">👥</div>
-            <div class="admin-stat-card__number" id="adminStatUsers">0</div>
-            <div class="admin-stat-card__label">Total Members</div>
-          </div>
-          <div class="admin-stat-card">
-            <div class="admin-stat-card__icon">📋</div>
-            <div class="admin-stat-card__number" id="adminStatBookings">0</div>
-            <div class="admin-stat-card__label">Active Bookings</div>
-          </div>
-          <div class="admin-stat-card">
-            <div class="admin-stat-card__icon">📦</div>
-            <div class="admin-stat-card__number" id="adminStatProducts">0</div>
-            <div class="admin-stat-card__label">Products</div>
-          </div>
-          <div class="admin-stat-card">
-            <div class="admin-stat-card__icon">💰</div>
-            <div class="admin-stat-card__number" id="adminStatRevenue">0</div>
-            <div class="admin-stat-card__label">Revenue ($)</div>
-          </div>
-          <div class="admin-stat-card">
-            <div class="admin-stat-card__icon">🛒</div>
-            <div class="admin-stat-card__number" id="adminStatOrders">0</div>
-            <div class="admin-stat-card__label">Total Orders</div>
-          </div>
-          <div class="admin-stat-card">
-            <div class="admin-stat-card__icon">🚫</div>
-            <div class="admin-stat-card__number" id="adminStatBlocked">0</div>
-            <div class="admin-stat-card__label">Blocked Users</div>
-          </div>
-          <div class="admin-stat-card">
-            <div class="admin-stat-card__icon">🏋️</div>
-            <div class="admin-stat-card__number" id="adminStatClasses">0</div>
-            <div class="admin-stat-card__label">Active Classes</div>
-          </div>
-          <div class="admin-stat-card">
-            <div class="admin-stat-card__icon">⚠️</div>
-            <div class="admin-stat-card__number" id="adminStatSoldOut">0</div>
-            <div class="admin-stat-card__label">Sold Out Items</div>
-          </div>
+        <div class="admin-toolbar__actions">
+          <a class="btn btn--primary btn--sm" href="admin-bookings.html">Manage Bookings</a>
+          <a class="btn btn--secondary btn--sm" href="admin-users.html">Manage Users</a>
+          <a class="btn btn--secondary btn--sm" href="admin-instructors.html">Manage Instructors</a>
+          <a class="btn btn--secondary btn--sm" href="admin-products.html">Manage Products</a>
         </div>
       </div>
 
-      <!-- Bookings Tab -->
-      <div class="admin-tab-content" id="tab-bookings">
-        <div class="admin-main__header">
-          <div>
-            <h1 class="admin-main__title">Bookings Management</h1>
-            <p class="admin-main__subtitle">View, add, and remove bookings for all users</p>
-          </div>
-          <button class="btn btn--primary btn--sm" onclick="showAddBookingModal()">+ Add Booking</button>
+      <div class="admin-stats">
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__icon">👥</div>
+          <div class="admin-stat-card__number" id="adminStatUsers">0</div>
+          <div class="admin-stat-card__label">Total Members</div>
         </div>
-
-        <div class="admin-toolbar">
-          <div class="admin-toolbar__search">
-            <input type="text" class="form-input" placeholder="🔍 Search bookings..." oninput="searchBookings(this.value)">
-          </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__icon">📋</div>
+          <div class="admin-stat-card__number" id="adminStatBookings">0</div>
+          <div class="admin-stat-card__label">Active Bookings</div>
         </div>
-
-        <div class="data-table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Class</th>
-                <th>Day</th>
-                <th>Time</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="adminBookingsBody">
-              <tr><td colspan="7"><div class="page-loading"><div class="spinner spinner--lg"></div></div></td></tr>
-            </tbody>
-          </table>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__icon">📦</div>
+          <div class="admin-stat-card__number" id="adminStatProducts">0</div>
+          <div class="admin-stat-card__label">Products</div>
         </div>
-      </div>
-
-      <!-- Users Tab -->
-      <div class="admin-tab-content" id="tab-users">
-        <div class="admin-main__header">
-          <div>
-            <h1 class="admin-main__title">User Management</h1>
-            <p class="admin-main__subtitle">View, block, and manage all users</p>
-          </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__icon">💰</div>
+          <div class="admin-stat-card__number" id="adminStatRevenue">0</div>
+          <div class="admin-stat-card__label">Revenue ($)</div>
         </div>
-
-        <div class="admin-toolbar">
-          <div class="admin-toolbar__search">
-            <input type="text" class="form-input" placeholder="🔍 Search users..." oninput="searchUsers(this.value)">
-          </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__icon">🛒</div>
+          <div class="admin-stat-card__number" id="adminStatOrders">0</div>
+          <div class="admin-stat-card__label">Total Orders</div>
         </div>
-
-        <div class="data-table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Member ID</th>
-                <th>User</th>
-                <th>Role</th>
-                <th>Bookings</th>
-                <th>Orders</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="adminUsersBody">
-              <tr><td colspan="7"><div class="page-loading"><div class="spinner spinner--lg"></div></div></td></tr>
-            </tbody>
-          </table>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__icon">🚫</div>
+          <div class="admin-stat-card__number" id="adminStatBlocked">0</div>
+          <div class="admin-stat-card__label">Blocked Users</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__icon">🏋️</div>
+          <div class="admin-stat-card__number" id="adminStatInstructors">0</div>
+          <div class="admin-stat-card__label">Active Instructors</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__icon">🏋️</div>
+          <div class="admin-stat-card__number" id="adminStatClasses">0</div>
+          <div class="admin-stat-card__label">Active Classes</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__icon">⚠️</div>
+          <div class="admin-stat-card__number" id="adminStatSoldOut">0</div>
+          <div class="admin-stat-card__label">Sold Out Items</div>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- Add Booking Modal -->
-  <div class="modal-overlay" id="addBookingModal">
-    <div class="modal">
-      <div class="modal__header">
-        <h3 class="modal__title">Add Booking</h3>
-        <button class="modal__close" onclick="closeModal('addBookingModal')">✕</button>
+  <div class="admin-confirm-overlay" id="adminConfirmOverlay">
+    <div class="admin-confirm">
+      <div class="admin-confirm__hero">
+        <div class="admin-confirm__icon" id="adminConfirmIcon">!</div>
+        <div class="admin-confirm__title" id="adminConfirmTitle">Confirm action</div>
       </div>
-      <div class="modal__body">
-        <div class="form-group">
-          <label>Select User</label>
-          <select class="form-select" id="addBookingUser">
-            <option value="">Loading users...</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Select Class</label>
-          <select class="form-select" id="addBookingClass">
-            <option value="">Loading classes...</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal__footer">
-        <button class="btn btn--secondary" onclick="closeModal('addBookingModal')">Cancel</button>
-        <button class="btn btn--primary" onclick="submitAddBooking()">Add Booking</button>
+      <div class="admin-confirm__message" id="adminConfirmMessage">Are you sure?</div>
+      <div class="admin-confirm__footer">
+        <button class="btn btn--secondary" id="adminConfirmCancel">Cancel</button>
+        <button class="btn btn--primary btn--confirm btn--danger" id="adminConfirmAction">Confirm</button>
       </div>
     </div>
   </div>

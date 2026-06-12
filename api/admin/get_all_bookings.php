@@ -13,7 +13,7 @@ try {
             u.email as userEmail,
             b.schedule_id as scheduleId,
             s.class_name as className,
-            s.instructor,
+            COALESCE(i.full_name, s.instructor) as instructor,
             s.day_of_week as day,
             DATE_FORMAT(s.start_time, '%h:%i %p') as time,
             b.booking_date as bookedAt,
@@ -21,6 +21,7 @@ try {
         FROM bookings b
         JOIN users u ON b.user_id = u.user_id
         JOIN schedules s ON b.schedule_id = s.schedule_id
+        LEFT JOIN instructors i ON i.instructor_id = s.instructor_id
         ORDER BY b.booking_date DESC
     ";
     $bookings = $pdo->query($sql)->fetchAll();

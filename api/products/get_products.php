@@ -1,6 +1,9 @@
 <?php
 // api/products/get_products.php — List all available products
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET');
+
 require_once __DIR__ . '/../../db.php';
 
 $category = trim($_GET['category'] ?? '');
@@ -29,5 +32,10 @@ try {
     jsonResponse(['success' => true, 'products' => $products]);
 
 } catch (\PDOException $e) {
-    jsonResponse(['success' => false, 'message' => 'Failed to fetch products.'], 500);
+    error_log('Products API Error: ' . $e->getMessage());
+    jsonResponse(['success' => false, 'message' => 'Failed to fetch products: ' . $e->getMessage()], 500);
+} catch (\Exception $e) {
+    error_log('Products API Error: ' . $e->getMessage());
+    jsonResponse(['success' => false, 'message' => 'Server error'], 500);
 }
+?>
